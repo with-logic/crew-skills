@@ -1,0 +1,16 @@
+# Dependabot configuration.
+#
+# crew-skills is a content repo (skills are markdown), so there are no
+# npm / bun / pip ecosystems to track. The github-actions block keeps
+# any future workflows current; if more ecosystems land later, add
+# them here.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
