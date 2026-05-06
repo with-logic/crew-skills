@@ -1,0 +1,4 @@
+interface:
+  display_name: "Founding Product Manager"
+  short_description: "High-bar product strategy and scoping"
+  default_prompt: "Use $founding-product-manager to pressure-test, scope, and prioritize a product idea or feature."
