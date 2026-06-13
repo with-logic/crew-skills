@@ -10,7 +10,7 @@ description: >-
   whenever you need to understand how an unfamiliar codebase is organized.
 ---
 
-# TangleGuard: query the architecture, don't guess it
+# TangleGuard: Query the Architecture, Don't Guess It
 
 TangleGuard is a static analysis tool (native Rust, extremely fast) that
 extracts structural artifacts from source code. Use its CLI to get
@@ -19,14 +19,14 @@ change you are about to make is allowed — instead of grepping across files and
 inferring the structure yourself. This keeps token usage low and your reasoning
 grounded in facts rather than guesses.
 
-## When to use this skill
+## When to Use This Skill
 
-Reach for `tangleguard-cli` whenever a task depends on the *structure* of the
+Reach for `tangleguard-cli` whenever a task depends on the _structure_ of the
 codebase, in particular:
 
 - **Before introducing a new dependency** between modules or packages — check
   whether it is allowed (`check-dependency`) and whether it would create a cycle
-  (`would-create-cycle`), *before* writing the import.
+  (`would-create-cycle`), _before_ writing the import.
 - **When deciding where new code belongs** — ask `placement` for a node's layer
   and the full set of things it may depend on (and that may depend on it).
 - **Before a structural change or refactor** — moving code between layers,
@@ -41,10 +41,10 @@ codebase, in particular:
 If you only need the structure, prefer asking TangleGuard over reading source
 files: it is faster, deterministic, and far cheaper in tokens.
 
-## How to use it
+## How to Use It
 
 The binary is `tangleguard-cli`. Most commands need the language (`-l`) and
-optionally a path (`-p`, defaults to the current directory). The *config-only*
+optionally a path (`-p`, defaults to the current directory). The _config-only_
 preflight checks below (`placement`, `check-dependency`) read `tangleguard.json`
 and do **not** scan, so they need no `-l`. Output is markdown by default, ready
 to read or drop straight into your reasoning. Add `--format json` when you need
@@ -60,9 +60,9 @@ Prints a compact summary: the layers, the allowed dependency rules, the
 packages (with their resolved layer and lines of code), and the package-level
 dependency graph. Run this first to understand the system.
 
-### Check before you change it (preflight)
+### Check Before You Change It (Preflight)
 
-These answer "may I?" *before* you write the code, so you never introduce a
+These answer "may I?" _before_ you write the code, so you never introduce a
 violation or a cycle in the first place. A `<node>` is a workspace path like
 `apps::web` or a layer name like `Apps`.
 
@@ -89,7 +89,7 @@ tangleguard-cli -l <language> [-p <path>] would-create-cycle --from <node> --to 
 Add `--ci` to `check-dependency` / `would-create-cycle` to exit non-zero on a
 denied edge or a would-be cycle (useful as a commit/CI guardrail).
 
-### Validate the architecture
+### Validate the Architecture
 
 ```bash
 tangleguard-cli -l <language> [-p <path>] validate         # rule violations + cycles
@@ -103,7 +103,7 @@ offending code.
 Supported languages include `rust`, `go`, `typescript` / `javascript`,
 `python`, `kotlin`, and `php`.
 
-## A typical flow
+## A Typical Flow
 
 1. The task touches the architecture → run `architecture` to learn the layers,
    the rules, and the package graph.
