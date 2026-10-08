@@ -68,9 +68,15 @@ plumbing here, check whether the same change should land there
 
 ## Review Expectations
 
-PRs get an automated Claude Code review on open
-(see [.github/pr-review-prompt.md](./.github/pr-review-prompt.md))
-plus a human review. Expect questions about:
+Same-repository PRs opened by a human with current write access or
+by official Dependabot get one automated review on open through the
+shared OpenCode workflow. On eligible PRs, a human with current write
+access can request another review by commenting exactly `/review`.
+Fork PRs need human review.
+
+PRs also get a human review. The automated reviewer uses
+[.github/pr-review-prompt.md](./.github/pr-review-prompt.md).
+Expect questions about:
 
 - Whether the skill's `description` is concrete enough to route
   correctly.
