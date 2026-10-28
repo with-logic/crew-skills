@@ -94,10 +94,20 @@ diff parser from silently missing staged content.
 To check committed branch history against a locally available base:
 
 ```sh
-GIT_NO_LAZY_FETCH=1 \
-GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
-gitleaks git --redact=100 \
-  --log-opts="origin/main..HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv"
+(
+  set -e
+  scan_stderr=$(mktemp)
+  trap 'rm -f "$scan_stderr"' EXIT
+  GIT_NO_LAZY_FETCH=1 \
+  GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
+  gitleaks git --redact=100 --log-level error \
+    --log-opts="origin/main..HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv" \
+    2>"$scan_stderr"
+  if [ -s "$scan_stderr" ]; then
+    cat "$scan_stderr" >&2
+    exit 1
+  fi
+)
 ```
 
 These commands do not install hooks. See the [native Gitleaks guide](https://github.com/gitleaks/gitleaks/tree/v8.30.1#readme)
