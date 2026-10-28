@@ -80,6 +80,7 @@ Install the native CLI once, then scan only the Git index:
 
 ```sh
 brew install gitleaks
+GIT_NO_LAZY_FETCH=1 \
 GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
 gitleaks git --pre-commit --staged --redact=100
 ```
@@ -89,6 +90,7 @@ diff parser from silently missing staged content. Use 8.30.1 for matching CI rul
 To check committed branch history against a locally available base:
 
 ```sh
+GIT_NO_LAZY_FETCH=1 \
 GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
 gitleaks git --redact=100 \
   --log-opts="origin/main..HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv"
