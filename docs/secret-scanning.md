@@ -1,5 +1,8 @@
 # Secret scanning in crew-skills
 
+Secret-scan results are advisory for merging into `main`; scans and #security
+alerts continue.
+
 The **Secret scan** check runs native, MIT-licensed Gitleaks 8.30.1 on PRs,
 branch/tag pushes, merge queues, and manual runs. PR, merge-queue, and pushed-range
 findings fail; deliberate full-history findings warn during historical triage.
