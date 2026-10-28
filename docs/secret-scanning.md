@@ -1,14 +1,16 @@
 # Secret scanning in crew-skills
 
 The **Secret scan** check runs native, MIT-licensed Gitleaks 8.30.1 on PRs,
-branch/tag pushes, merge queues, and manual runs. Findings and scanner errors
-fail the check. Require this check in branch protection while preserving existing
-requirements. Gitleaks recognizes credential patterns; it does not verify whether
-a match is a live, private secret.
+branch/tag pushes, merge queues, and manual runs. PR, merge-queue, and pushed-range
+findings fail; deliberate full-history findings warn during historical triage.
+Scanner, Git, and configuration errors still fail. Gitleaks recognizes credential
+patterns; it does not verify whether a match is a live, private secret.
 
 PRs scan base-to-head history, so adding a credential and deleting it in a later
-commit still fails. Pushes scan the pushed range when the previous commit is
-available; new refs and manual runs scan history reachable from the selected head.
+commit still fails. Pushes scan the pushed range; first feature-branch pushes scan
+from the merge base with the fetched default branch, excluding inherited history.
+Missing required bases fail. Tags, first default-branch pushes, and manual runs
+scan history reachable from the selected head.
 Ignored and untracked local files such as `.env` are outside the scan. A
 force-added or previously tracked `.env` is Git content and is checked.
 
@@ -18,15 +20,17 @@ Gitleaks account or license signup is needed. A separate `pull_request_target`
 run uses trusted workflow code to scan PR data and comment on findings/errors,
 including fork PRs. It never runs project scripts, dependencies, or local actions.
 These comments start after the workflow reaches the default branch. They link to
-finding metadata in the run log. Native `--redact=100` redacts matched content;
-Git paths and **Ignore IDs**, including any sensitive text in paths, remain
-visible in the public run log.
+rule, introducing commit, and line metadata in the run log. File paths and
+**Ignore IDs** are omitted from this public log because native `--redact=100`
+does not redact sensitive text in those fields.
 
 ## Investigate a finding
 
-The log shows the rule, file/line, introducing commit, and **Ignore ID**. Inspect
-the reported location privately; do not paste possible credentials into PRs,
-Slack, or issues.
+The public log shows the rule, introducing commit, and line. Use native Gitleaks'
+`--report-format json` and `--report-path` options for a private local report
+containing file paths and **Ignore IDs**. Keep that report private: these fields
+are not redacted. Inspect the reported location privately; do not paste possible
+credentials into PRs, Slack, or issues.
 
 - **Real credential:** revoke or rotate it if exposed, replace it with an
   environment-variable or secret-store reference, and remove it from every
@@ -78,7 +82,7 @@ when adding an exception; exceptions apply only to this repository.
 
 ## Local scans
 
-Install the native CLI once, then scan only the Git index. `brew install gitleaks`
+Install the native CLI once, then scan trusted staged changes. `brew install gitleaks`
 installs the current Homebrew formula version. For exact CI parity, install the
 official [Gitleaks 8.30.1 release](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1).
 
@@ -90,7 +94,10 @@ gitleaks git --pre-commit --staged --redact=100
 ```
 
 The native scan needs no network access. Disabling Git color prevents the 8.30.1
-diff parser from silently missing staged content.
+diff parser from silently missing staged content. Native staged mode follows Git
+diff attributes, including binary markings and configured textconv drivers. Run
+this command only on trusted staged changes; CI's separate committed-history
+scan forces text and disables textconv.
 To check committed branch history against a locally available base:
 
 ```sh
@@ -98,18 +105,20 @@ To check committed branch history against a locally available base:
   set -e
   scan_stderr=$(mktemp)
   trap 'rm -f "$scan_stderr"' EXIT
+  scan_status=0
   GIT_NO_LAZY_FETCH=1 \
   GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
   gitleaks git --redact=100 --log-level error \
     --log-opts="origin/main..HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv" \
-    2>"$scan_stderr"
+    2>"$scan_stderr" || scan_status=$?
   if [ -s "$scan_stderr" ]; then
     cat "$scan_stderr" >&2
-    exit 1
+    if [ "$scan_status" -eq 0 ]; then scan_status=1; fi
   fi
+  exit "$scan_status"
 )
 ```
 
 These commands do not install hooks. See the [native Gitleaks guide](https://github.com/gitleaks/gitleaks/tree/v8.30.1#readme)
-for CLI details. The organization-wide six-hour history sweep and Slack alerts are
-still rollout work; do not rely on them until activation is confirmed.
+for CLI details. The organization-wide twelve-hour history sweep reports findings
+to #security.
