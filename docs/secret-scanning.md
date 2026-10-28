@@ -18,7 +18,9 @@ Gitleaks account or license signup is needed. A separate `pull_request_target`
 run uses trusted workflow code to scan PR data and comment on findings/errors,
 including fork PRs. It never runs project scripts, dependencies, or local actions.
 These comments start after the workflow reaches the default branch. They link to
-redacted metadata in the run log and never include detected values.
+finding metadata in the run log. Native `--redact=100` redacts matched content;
+Git paths and **Ignore IDs**, including any sensitive text in paths, remain
+visible in the public run log.
 
 ## Investigate a finding
 
@@ -76,7 +78,9 @@ when adding an exception; exceptions apply only to this repository.
 
 ## Local scans
 
-Install the native CLI once, then scan only the Git index:
+Install the native CLI once, then scan only the Git index. `brew install gitleaks`
+installs the current Homebrew formula version. For exact CI parity, install the
+official [Gitleaks 8.30.1 release](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1).
 
 ```sh
 brew install gitleaks
@@ -86,7 +90,7 @@ gitleaks git --pre-commit --staged --redact=100
 ```
 
 The native scan needs no network access. Disabling Git color prevents the 8.30.1
-diff parser from silently missing staged content. Use 8.30.1 for matching CI rules.
+diff parser from silently missing staged content.
 To check committed branch history against a locally available base:
 
 ```sh

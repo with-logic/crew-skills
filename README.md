@@ -14,7 +14,7 @@ crew install <skill-name>
 
 ## Browse what's here
 
-Each immediate subdirectory of this repo is one skill. Drop into any of them to read its `SKILL.md`.
+Skills live in top-level directories containing a `SKILL.md`. The `docs/` directory contains repository documentation and is not an installable skill; see the [secret-scanning guide](docs/secret-scanning.md).
 
 You can also search from the command line:
 
