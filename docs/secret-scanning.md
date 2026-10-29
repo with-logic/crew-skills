@@ -96,6 +96,37 @@ Install the native CLI once with `brew install gitleaks`, which installs the
 current Homebrew formula version. For exact CI parity, install the
 official [Gitleaks 8.30.1 release](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1).
 
+### Staged changes
+
+Before activating the hook, inspect `git config --get core.hooksPath` and any
+existing custom hooks or checks. Migrate them into `.githooks` before changing
+`core.hooksPath`, because the setting replaces Git's active hook directory.
+Then enable the hook from the repository root:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+To scan staged changes manually, run the same guarded helper:
+
+```sh
+.githooks/scan-secrets
+```
+
+The `prepare-commit-msg` hook scans staged Git changes before a commit and still
+runs with `git commit --no-verify`. Local configuration or hook edits can bypass
+it; CI continues to scan committed history independently. Ignored and untracked
+files such as `.env` are excluded unless force-added or already tracked. Partially
+staged files are checked using their staged content.
+
+Native Git attributes and textconv can affect this local scan, so use it only
+with staged changes you trust. The committed-history CI scan forces text output
+and disables textconv and external diff drivers. The local template prints rules,
+file paths, line numbers, and fingerprints. Paths and fingerprints are not
+redacted; keep this output private.
+
+### Committed history
+
 From the repository root, scan committed history and write a redacted diagnostic
 report outside the checkout. The native scan runs offline, forces Git text output,
 and disables textconv and external diff drivers:
@@ -127,6 +158,6 @@ The directory is mode `700`; its report and diagnostic files are mode `600`.
 Findings and scanner errors return a nonzero status. The report and diagnostics
 remain available for inspection; remove the private directory when finished.
 
-This command does not install hooks. See the [native Gitleaks guide](https://github.com/gitleaks/gitleaks/tree/v8.30.1#readme)
+See the [native Gitleaks guide](https://github.com/gitleaks/gitleaks/tree/v8.30.1#readme)
 for CLI details. The organization-wide twelve-hour history sweep reports findings
 to #security.

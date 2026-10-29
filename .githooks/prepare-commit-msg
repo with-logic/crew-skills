@@ -1,0 +1,6 @@
+#!/bin/sh
+# Keep staged scanning active with --no-verify, which bypasses pre-commit.
+set -eu
+
+HOOK_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+exec "$HOOK_DIR/scan-secrets"
