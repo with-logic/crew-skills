@@ -42,6 +42,25 @@ containing file paths and native `Fingerprint` values (the **Ignore IDs** used b
 Inspect the reported location privately; do not paste possible credentials into
 PRs, Slack, or issues.
 
+From the repository root, create a report of committed history in a private
+directory outside the checkout:
+
+```sh
+(
+  umask 077
+  report_dir=$(mktemp -d /tmp/crew-skills-gitleaks.XXXXXX) || exit 1
+  printf 'Private report directory: %s\n' "$report_dir"
+  GIT_NO_LAZY_FETCH=1 \
+  GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
+  gitleaks git --redact=100 --log-level error \
+    --log-opts="HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv" \
+    --report-format json --report-path "$report_dir/findings.json"
+)
+```
+
+The directory is mode `700` and the report is mode `600`. Remove the directory
+when finished; findings can give a nonzero exit while still writing the report.
+
 - **Real credential:** revoke or rotate it if exposed, replace it with an
   environment-variable or secret-store reference, and remove it from every
   introducing PR commit. Coordinate rewriting shared history with the owner;
@@ -121,6 +140,7 @@ To check committed branch history against a locally available base:
   gitleaks git --redact=100 --log-level error \
     --log-opts="origin/main..HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv" \
     2>"$scan_stderr" || scan_status=$?
+  # Gitleaks can log Git-source errors on stderr and still exit zero.
   if [ -s "$scan_stderr" ]; then
     cat "$scan_stderr" >&2
     if [ "$scan_status" -eq 0 ]; then scan_status=1; fi
