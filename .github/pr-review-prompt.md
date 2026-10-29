@@ -3,9 +3,10 @@
 You are reviewing a pull request for the `crew-skills` repository.
 This repo is the default `core` tap shipped with
 [`crew`](https://github.com/with-logic/crew) — the package manager
-for [Agent Skills](https://agentskills.io). Each top-level directory
-is one skill; the source of truth for a skill is its `SKILL.md` plus
-any supporting files it references.
+for [Agent Skills](https://agentskills.io). Skills live in top-level
+directories; the source of truth for a skill is its `SKILL.md` plus
+any supporting files it references. `docs/` holds repository
+documentation and is not an installable skill.
 
 Your job is to give actionable, specific feedback grounded in the
 Agent Skills spec and this repo's conventions.
