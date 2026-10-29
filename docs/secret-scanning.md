@@ -35,31 +35,12 @@ identifies its scanned commit.
 
 ## Investigate a finding
 
-The public log shows the rule, introducing commit, and line. Use native Gitleaks'
-`--report-format json` and `--report-path` options for a private local report
-containing file paths and native `Fingerprint` values (the **Ignore IDs** used by
-`.gitleaksignore`). Keep that report private: these fields are not redacted.
+The public log shows the rule, introducing commit, and line. Use the
+[guarded local report command](#local-scans) to obtain file paths and native
+`Fingerprint` values (the **Ignore IDs** used by `.gitleaksignore`). Keep that
+report private: these fields are not redacted.
 Inspect the reported location privately; do not paste possible credentials into
 PRs, Slack, or issues.
-
-From the repository root, create a report of committed history in a private
-directory outside the checkout:
-
-```sh
-(
-  umask 077
-  report_dir=$(mktemp -d /tmp/crew-skills-gitleaks.XXXXXX) || exit 1
-  printf 'Private report directory: %s\n' "$report_dir"
-  GIT_NO_LAZY_FETCH=1 \
-  GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
-  gitleaks git --redact=100 --log-level error \
-    --log-opts="HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv" \
-    --report-format json --report-path "$report_dir/findings.json"
-)
-```
-
-The directory is mode `700` and the report is mode `600`. Remove the directory
-when finished; findings can give a nonzero exit while still writing the report.
 
 - **Real credential:** revoke or rotate it if exposed, replace it with an
   environment-variable or secret-store reference, and remove it from every
@@ -111,34 +92,27 @@ when adding an exception; exceptions apply only to this repository.
 
 ## Local scans
 
-Install the native CLI once, then scan trusted staged changes. `brew install gitleaks`
-installs the current Homebrew formula version. For exact CI parity, install the
+Install the native CLI once with `brew install gitleaks`, which installs the
+current Homebrew formula version. For exact CI parity, install the
 official [Gitleaks 8.30.1 release](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1).
 
-```sh
-brew install gitleaks
-GIT_NO_LAZY_FETCH=1 \
-GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
-gitleaks git --pre-commit --staged --redact=100
-```
-
-The native scan needs no network access. Disabling Git color prevents the 8.30.1
-diff parser from silently missing staged content. Native staged mode follows Git
-diff attributes, including binary markings and configured textconv drivers. Run
-this command only on trusted staged changes; CI's separate committed-history
-scan forces text and disables textconv.
-To check committed branch history against a locally available base:
+From the repository root, scan committed history and write a redacted diagnostic
+report outside the checkout. The native scan runs offline, forces Git text output,
+and disables textconv and external diff drivers:
 
 ```sh
 (
   set -e
-  scan_stderr=$(mktemp)
-  trap 'rm -f "$scan_stderr"' EXIT
+  umask 077
+  report_dir=$(mktemp -d /tmp/crew-skills-gitleaks.XXXXXX)
+  printf 'Private report directory: %s\n' "$report_dir"
+  scan_stderr="$report_dir/errors"
   scan_status=0
   GIT_NO_LAZY_FETCH=1 \
   GIT_CONFIG_PARAMETERS="${GIT_CONFIG_PARAMETERS:+$GIT_CONFIG_PARAMETERS }'color.ui=false' 'color.diff=false'" \
-  gitleaks git --redact=100 --log-level error \
-    --log-opts="origin/main..HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv" \
+  gitleaks git --redact=100 --no-banner --log-level error \
+    --log-opts="HEAD --full-history --diff-merges=remerge --text --no-ext-diff --no-textconv" \
+    --report-format json --report-path "$report_dir/findings.json" \
     2>"$scan_stderr" || scan_status=$?
   # Gitleaks can log Git-source errors on stderr and still exit zero.
   if [ -s "$scan_stderr" ]; then
@@ -149,6 +123,10 @@ To check committed branch history against a locally available base:
 )
 ```
 
-These commands do not install hooks. See the [native Gitleaks guide](https://github.com/gitleaks/gitleaks/tree/v8.30.1#readme)
+The directory is mode `700`; its report and diagnostic files are mode `600`.
+Findings and scanner errors return a nonzero status. The report and diagnostics
+remain available for inspection; remove the private directory when finished.
+
+This command does not install hooks. See the [native Gitleaks guide](https://github.com/gitleaks/gitleaks/tree/v8.30.1#readme)
 for CLI details. The organization-wide twelve-hour history sweep reports findings
 to #security.
