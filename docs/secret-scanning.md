@@ -28,10 +28,10 @@ rule, introducing commit, and line metadata in the run log. File paths and
 fingerprints are omitted from this public log because native `--redact=100`
 does not redact sensitive text in those fields.
 
-Guidance is best effort: newer PR events cancel older runs for the same PR and
-event. Each push, merge-queue event, or manual dispatch keeps its own run. The head
-is checked immediately before posting. A push can still race GitHub's separate
-head-check and comment requests; each comment identifies its scanned commit.
+Each PR, push, merge-queue event, and manual dispatch starts an independent scan.
+Guidance is best effort: the head is checked immediately before posting. A push
+can still race GitHub's separate head-check and comment requests; each comment
+identifies its scanned commit.
 
 ## Investigate a finding
 
