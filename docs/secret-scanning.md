@@ -5,8 +5,8 @@ alerts continue.
 
 The **Secret scan** check runs native, MIT-licensed Gitleaks 8.30.1 on PRs,
 branch/tag pushes, merge queues, and manual runs. PR, merge-queue, and pushed-range
-findings fail; deliberate full-history findings warn during historical triage.
-Scanner, Git, and configuration errors still fail. Gitleaks recognizes credential
+findings fail the scan job. Findings from full-history scans warn during historical
+triage. Scanner, Git, and configuration errors still fail. Gitleaks recognizes credential
 patterns; it does not verify whether a match is a live, private secret.
 
 PRs scan base-to-head history, so adding a credential and deleting it in a later
@@ -28,9 +28,10 @@ rule, introducing commit, and line metadata in the run log. File paths and
 fingerprints are omitted from this public log because native `--redact=100`
 does not redact sensitive text in those fields.
 
-Guidance is best effort: newer events cancel older runs for the same PR and event,
-and the head is checked immediately before posting. A push can still race GitHub's
-separate head-check and comment requests; each comment identifies its scanned commit.
+Guidance is best effort: newer PR events cancel older runs for the same PR and
+event. Each push, merge-queue event, or manual dispatch keeps its own run. The head
+is checked immediately before posting. A push can still race GitHub's separate
+head-check and comment requests; each comment identifies its scanned commit.
 
 ## Investigate a finding
 
