@@ -10,10 +10,11 @@ Scanner, Git, and configuration errors still fail. Gitleaks recognizes credentia
 patterns; it does not verify whether a match is a live, private secret.
 
 PRs scan base-to-head history, so adding a credential and deleting it in a later
-commit still fails. Pushes scan the pushed range; first feature-branch pushes scan
-from the merge base with the fetched default branch, excluding inherited history.
-Missing required bases fail. Tags, first default-branch pushes, and manual runs
-scan history reachable from the selected head.
+commit still fails. Pushes scan the pushed range; first pushes to non-default
+branches scan from the merge base with the fetched default branch, excluding
+inherited history. Missing required bases fail. New tag pushes, first
+default-branch pushes, and manual runs scan history reachable from the selected
+head. Tag updates scan only the pushed range, where findings fail the scan job.
 Ignored and untracked local files such as `.env` are outside the scan. A
 force-added or previously tracked `.env` is Git content and is checked.
 
@@ -24,16 +25,21 @@ run uses trusted workflow code to scan PR data and comment on findings/errors,
 including fork PRs. It never runs project scripts, dependencies, or local actions.
 These comments start after the workflow reaches the default branch. They link to
 rule, introducing commit, and line metadata in the run log. File paths and
-**Ignore IDs** are omitted from this public log because native `--redact=100`
+fingerprints are omitted from this public log because native `--redact=100`
 does not redact sensitive text in those fields.
+
+Guidance is best effort: newer events cancel older runs for the same PR and event,
+and the head is checked immediately before posting. A push can still race GitHub's
+separate head-check and comment requests; each comment identifies its scanned commit.
 
 ## Investigate a finding
 
 The public log shows the rule, introducing commit, and line. Use native Gitleaks'
 `--report-format json` and `--report-path` options for a private local report
-containing file paths and **Ignore IDs**. Keep that report private: these fields
-are not redacted. Inspect the reported location privately; do not paste possible
-credentials into PRs, Slack, or issues.
+containing file paths and native `Fingerprint` values (the **Ignore IDs** used by
+`.gitleaksignore`). Keep that report private: these fields are not redacted.
+Inspect the reported location privately; do not paste possible credentials into
+PRs, Slack, or issues.
 
 - **Real credential:** revoke or rotate it if exposed, replace it with an
   environment-variable or secret-store reference, and remove it from every
@@ -50,20 +56,20 @@ credentials into PRs, Slack, or issues.
 Each repo owns its root `.gitleaks.toml` and `.gitleaksignore`. Native Gitleaks
 reads policy from the scanned checkout, including inline `gitleaks:allow`
 comments. A proposed exception can therefore affect its own PR scan. These
-changes need trusted human review, just like workflow changes; the required
-check does not technically enforce exception approval.
+changes need trusted human review, just like workflow changes; CI does not
+technically enforce exception approval. Scan results remain advisory for merging.
 
-For one historical finding, copy its complete Ignore ID into `.gitleaksignore`,
-one per line, with the reason and review reference on a separate comment line:
+For one historical finding, copy its complete `Fingerprint` from the private JSON
+report into `.gitleaksignore`, one per line, with the reason and review reference
+on a separate comment line:
 
 ```text
 # Generated frontend demo value; reviewed in <review link>.
 <commit>:<path>:<rule>:<line>
 ```
 
-This is a finding fingerprint, not a file hash or
-whole-file exclusion. Rebase/history changes or a new introduction can produce a
-different ID.
+This finding fingerprint is not a file hash or whole-file exclusion.
+Rebase/history changes or a new introduction can produce a different fingerprint.
 
 For recurring verified public/test data, preserve default rules and allow only
 the complete approved value for each matching rule:
