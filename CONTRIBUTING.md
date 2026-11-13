@@ -68,8 +68,8 @@ plumbing here, check whether the same change should land there
 
 ## Review Expectations
 
-PRs get an automated review through the shared OpenCode workflow and a
-human review. The automated reviewer uses
+The shared OpenCode workflow runs the automated review, and a human also
+reviews each PR. The automated reviewer uses
 [.github/pr-review-prompt.md](./.github/pr-review-prompt.md).
 Expect questions about:
 
