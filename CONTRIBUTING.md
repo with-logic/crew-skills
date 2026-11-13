@@ -93,8 +93,7 @@ them.
 
 Use a published [Crew release](https://crew.logic.inc/) with project manifests
 (0.13+; 0.14.0 verified). Check `crew version` and Git read access to
-`with-logic/skills`. Without that access, the shared local review is not
-available: report the review as not run. Enable the agent if needed with
+`with-logic/skills`. Enable the agent if needed with
 `crew agents enable codex` or `crew agents enable claude-code`, then run this
 from the repository root:
 
