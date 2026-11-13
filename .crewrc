@@ -1,0 +1,5 @@
+# Shared local review instructions; refresh before each required review.
+# code-review here is the review collection in with-logic/skills: it installs
+# review and the review-* lenses. It is not this tap's own code-review skill.
+@with-logic/skills@main//skills/code-review
+@with-logic/skills@main//skills/pull-request-description

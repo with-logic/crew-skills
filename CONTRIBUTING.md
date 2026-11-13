@@ -84,3 +84,42 @@ Expect questions about:
 - Whether agent-executed instructions are safe (no untrusted shell,
   no symlink escape, no exfiltration paths).
 - Whether the skill is self-contained and references resolve.
+
+## Shared local review
+
+Shared review skills and the PR-description helper come from `.crewrc` through
+Crew. This repository has no dependency setup, so no other command installs
+them.
+
+Use a published [Crew release](https://crew.logic.inc/) with project manifests
+(0.13+; 0.14.0 verified). Check `crew version` and Git read access to
+`with-logic/skills`. Without that access, the shared local review is not
+available: report the review as not run. Enable the agent if needed with
+`crew agents enable codex` or `crew agents enable claude-code`, then run this
+from the repository root:
+
+```sh
+crew install --latest --json
+```
+
+A failure exits nonzero; fix the reported cause and run it again. For a
+`no_agents` result, enable your agent with the command above. A zero exit does
+not prove that your agent is ready. The preparation checks of each review
+confirm it.
+
+Before **each required local review**, the coding agent refreshes again and
+verifies the result. The "Required local review" section of `AGENTS.md` holds
+that procedure.
+
+Commit `.crewrc` and its Crew-generated `.crewrc.lock`. Plain `crew install`
+retains the locked revision; `--latest` can advance it. Each refresh runs the
+current `main` of `with-logic/skills` immediately. No one in this repository
+reviews that revision first, so the local review trusts the maintainers of
+`with-logic/skills`. The lock records the revision that ran. The agent does not
+discard a lock advance. The author commits it in the pull request under review,
+so that reviewers see it, or discards it after the review with
+`git restore .crewrc.lock`. After a discard, the installed copies are newer than
+the lock until the next `crew install`. If `.crewrc.lock` conflicts with the
+base branch, keep the base branch's lock; the next refresh can advance it again.
+Downloaded project skills stay ignored. They are not skills of this tap: the
+skills that this tap publishes are the top-level directories.

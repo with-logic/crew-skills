@@ -1,1 +1,10 @@
 .DS_Store
+
+# Crew-managed project copies. The names review, review-* and
+# pull-request-description are reserved for Crew; skills with other names are
+# not ignored. The skills of this tap are top-level directories.
+/.*/skills/pull-request-description/
+/.*/skills/review/
+/.*/skills/review-*/
+/.*/skills/.crew-target
+/.*/skills/.crew-target.lock.owner
