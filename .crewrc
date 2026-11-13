@@ -1,0 +1,4 @@
+# Shared local review instructions; refresh before each required review.
+# code-review is a collection: it installs review and the review-* lenses.
+@with-logic/skills@main//skills/code-review
+@with-logic/skills@main//skills/pull-request-description
