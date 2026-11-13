@@ -112,9 +112,10 @@ verifies the result. The "Required local review" section of `AGENTS.md` holds
 that procedure.
 
 Commit `.crewrc` and its Crew-generated `.crewrc.lock`. Plain `crew install`
-retains the locked revision; `--latest` can advance it. Each refresh installs
-the current `main` of `with-logic/skills` before this repository reviews the
-lock change; the lock then names the revision that ran. The agent does not
+retains the locked revision; `--latest` can advance it. Each refresh runs the
+current `main` of `with-logic/skills` immediately. No one in this repository
+reviews that revision first, so the local review trusts the maintainers of
+`with-logic/skills`. The lock records the revision that ran. The agent does not
 discard a lock advance. The author commits it in the pull request under review,
 so that reviewers see it, or discards it after the review with
 `git restore .crewrc.lock`. After a discard, the installed copies are newer than
