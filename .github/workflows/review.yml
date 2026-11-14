@@ -101,6 +101,11 @@ jobs:
         timeout-minutes: 75
         uses: ./.pipeline/actions/code-review
         with:
+          # Dependabot uses its own secret store; keep its current source until App setup.
+          review-source: ${{ github.actor == 'dependabot[bot]' && 'pipeline' || 'skills' }}
+          # The token action accepts a client ID through its app-id input.
+          skills-app-id: ${{ vars.PIPELINE_SOURCE_APP_CLIENT_ID }}
+          skills-app-private-key: ${{ secrets.PIPELINE_SOURCE_APP_PRIVATE_KEY }}
           github-token: ${{ github.token }}
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           pr-number: ${{ needs.authorize.outputs.pr-number }}

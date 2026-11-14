@@ -44,4 +44,7 @@ and downloaded copies ignored. Do not commit a file under `.agents/skills/` or
 repository is public. Do not discard a lock change yourself. The human author
 commits it for review or discards it after the review. Do not refresh while
 reviewers run. Do not add a script or workflow to this repository that downloads
-or selects review skills.
+or selects review skills. The one exception is the hosted review workflow: it sets the
+`review-source` input of Pipeline's code-review action, and passes the source App
+credentials that Pipeline uses to read `with-logic/skills`: the variable
+`PIPELINE_SOURCE_APP_CLIENT_ID` and the secret `PIPELINE_SOURCE_APP_PRIVATE_KEY`.
